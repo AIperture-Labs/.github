@@ -47,22 +47,21 @@ useful, but the work itself is tracked in issues and PRs. The roadmap picture on
 | 2026-11-05 | Branches: features → `dev` (squash merge), `dev` → `main` (merge commit); `dev` is the default branch. |
 | 2026-11-05 | Priorities: the engine first, then test projects and a game; the website is secondary. |
 | 2026-11-05 | Planning: this file, then milestones and issues per repository, and one organization-level GitHub Project. |
+| 2026-11-05 | Targets: Linux and Windows. All OS-specific code lives in an isolated `platform` module, so Android, VR or macOS can be added later. |
+| 2026-11-05 | Dependencies: vcpkg in manifest mode, pinned with a baseline and per-library overrides; overlay ports for patched libraries or our forks. |
+| 2026-11-05 | Window and input: SDL3. |
+| 2026-11-05 | UI: Dear ImGui (docking branch) and its extensions for the editor; RmlUi for in-game UI. Editor panels may be described from Python, Blender-style. |
+| 2026-11-05 | Vulkan: the C API with volk and VMA, wrapped in thin C++ RAII types with a deferred deletion queue. Minimum version 1.4. |
+| 2026-11-05 | Shaders: Slang, compiled to SPIR-V at build time. |
 
 ## Open questions
 
 Settled one at a time; each answer moves to *Decisions* and, if it changes
 code, becomes an issue.
 
-- **Platforms** — Linux first, Windows at the same time, or later?
-- **External libraries** — submodules of our forks (legacy), CMake
-  `FetchContent`, or a package manager (vcpkg, Conan)?
-- **Window and input** — GLFW, SDL3, or native?
-- **Vulkan API layer** — plain C API, Vulkan-Hpp (RAII), helpers like volk /
-  vk-bootstrap / VMA?
-- **Shaders** — Slang or GLSL, compiled at build time?
+- **Toolchain** — Clang everywhere (clang-cl on Windows), or GCC + MSVC?
 - **Engine architecture** — module boundaries, ECS (custom, EnTT), plugin
   model.
-- **Editor UI** — which library draws the interface (Dear ImGui…)?
 - **Scripting runtimes** — how Python and Lua are embedded and installed
   (uv-managed Python as in legacy? Lua 5.4 or LuaJIT?).
 - **Tooling** — tests (doctest?), CI (GitHub Actions), profiling (Tracy),
