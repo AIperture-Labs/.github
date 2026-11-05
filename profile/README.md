@@ -11,6 +11,6 @@ Mostly one human and a lot of validation layers.
 
 ### 🧰 Toolbox
 
-C++20 · Vulkan · CMake · just · RenderDoc · Tracy
+C++23 · Vulkan · CMake · just · RenderDoc · Tracy
 
 <sub>Run by [@XavierBeheydt](https://github.com/XavierBeheydt) · Forks of dependencies (glm, doctest, yasm, libjpeg-turbo) live here for the engine build.</sub>
