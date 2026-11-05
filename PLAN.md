@@ -112,7 +112,21 @@ gh api "$R/milestones" -f title="M4 · Audio basics"
 | 2026-11-05 | Serialization: scenes and assets as JSON (glaze) in the editor, splittable per entity or zone for large scenes; binary compressed with zstd or LZ4 in shipped games. Configuration files in TOML (toml++). |
 | 2026-11-05 | Debugger: LLDB on Linux and Windows, driven from Neovim through DAP (nvim-dap, lldb-dap). |
 | 2026-11-05 | Neovim: first as the external code editor (open a file at a line, hot reload on save) with a Neovim plugin to drive the engine; embedding it in an editor panel comes later. |
-| 2026-11-05 | AI (voice generation, speech-to-text, text-to-speech, lightweight model management, training) is set aside; it is raised again when designing the plugins and the asset pipeline. |
+| 2026-11-05 | Modules and plugins, Unreal-style: a module is a unit of compiled code; a plugin packages modules and assets with a TOML descriptor (name, version, dependencies), at engine or project level. Gameplay features are plugins that can be toggled at runtime. |
+| 2026-11-05 | Plugin contract: C++ first (plugins use the engine classes directly, with a version check at load). A stable C interface for external plugins and other languages (Rust…), generated from reflection like Godot's GDExtension, is a later track; reflection must therefore describe functions as well as fields. |
+| 2026-11-05 | Projects, Unreal-style: a folder with `project.toml` (name, engine version, modules, enabled plugins) and `source/`, `content/`, `scripts/`, `config/`, `plugins/`. The engine lives apart and is found through a small registry of installations: built from source first, prebuilt releases on GitHub Releases later. A template generates new projects. |
+| 2026-11-05 | Rendering architecture: a render graph from the start (passes declare what they read and write; the engine derives order, barriers and transient memory) with bindless resources. |
+| 2026-11-05 | Advanced rendering, after ray tracing and in this order, each as a demo: path tracing (reference renderer), real-time global illumination, GPU particles, fluids (compute), virtualized geometry with meshlets and mesh shaders (meshoptimizer). |
+| 2026-11-05 | Networking: client-server with an authoritative server (listen server for co-op, headless dedicated server otherwise), transport with GameNetworkingSockets, replication driven by reflection with relevancy and delta updates, designed for about a hundred players per server. Multi-server worlds later. Comes after the ECS. |
+| 2026-11-05 | Animation: ozz-animation behind our interface (skeletal animation from glTF, blending, IK), ACL optional for compression; state machines and an animation node graph in the editor. Motion matching later. |
+| 2026-11-05 | Input: action-based mapping (Enhanced Input-like) over SDL3, with contexts and rebinding. Actions bind to scancodes so layouts (QWERTY, AZERTY…) work unchanged; key names are shown in the player's layout; letter shortcuts in the editor use keycodes. |
+| 2026-11-05 | Localization: text keys, never hard-coded strings, translated with Fluent; text rendering with FreeType and HarfBuzz. |
+| 2026-11-05 | Assets: each asset has a unique ID in a TOML sidecar file next to it, so moving or renaming never breaks references. Imported data goes to a git-ignored cache. The editor watches files and hot-reloads textures, shaders, sounds and scripts. |
+| 2026-11-05 | Node graphs: one shared node graph system for audio, animation, materials and AI pipelines. |
+| 2026-11-05 | AI plugin: inference in C++, usable in the editor and in games (ONNX Runtime; ggml family: llama.cpp, whisper.cpp, stable-diffusion.cpp); models managed as assets with ID and version, downloadable from Hugging Face, each with its license checked; ComfyUI-like pipelines as node graphs in the editor for textures, images, 3D, sounds and voices. In games, only lightweight models. Blender/GIMP-like editing tools are a separate long-term track. |
+| 2026-11-05 | Export (cooking): scenes and assets converted to compressed binary and packed into archives (`.pak`-like), splittable for updates and DLC, shipped with the player and the game code linked statically, per platform. |
+| 2026-11-05 | Modding: a virtual file system mounting mod archives and folders over the game's, with priorities; mods are plugins with the same TOML descriptor, dependencies and load order; Lua as the modding language in a sandbox; native mods possible later through the stable C interface; the editor doubles as the modding kit with a mod project template. Steam Workshop / mod.io later. |
+| 2026-11-05 | Priorities: test projects come next to the engine, each one demonstrating and validating features as they are developed; the game follows afterwards; the website is secondary. |
 
 ## Open questions
 
@@ -121,6 +135,11 @@ code, becomes an issue.
 
 - **Plugin model** — the content module entry point, and how plugins
   register in shared and static modes. To settle at M1.
+- **Stable C interface** — to be checked: actual cost, generator design,
+  memory ownership rules across the boundary, and whether it is worth it
+  before a first Rust plugin.
+- **Test projects** — how they are organized (one repository each, or one
+  repository of samples), and which feature each one validates.
 
 ## Prototypes
 
@@ -152,6 +171,10 @@ Comparisons to run when the feature is implemented, before choosing:
 | **Visual identity** | Rework the look of the profile and the roadmap SVG: fonts, colors, layout. A font must be embedded in the SVG (base64 `@font-face`), since GitHub blocks external fonts in images | The profile page and the roadmap share one identity, reused later by the website |
 
 ### Later (not scheduled)
+
+Advanced rendering in this order: path tracing, real-time global
+illumination, GPU particles, fluids, virtualized geometry. Networking after
+the ECS. Animation, input actions, localization, export and modding.
 
 ECS and plugins, Python automation, Lua scripting, physics, asset pipeline
 and FBX/Assimp plugins, Pure Data and Faust synth modules, AI subsystem,
