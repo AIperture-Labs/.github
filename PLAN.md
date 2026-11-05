@@ -53,19 +53,26 @@ useful, but the work itself is tracked in issues and PRs. The roadmap picture on
 | 2026-11-05 | UI: Dear ImGui (docking branch) and its extensions for the editor; RmlUi for in-game UI. Editor panels may be described from Python, Blender-style. |
 | 2026-11-05 | Vulkan: the C API with volk and VMA, wrapped in thin C++ RAII types with a deferred deletion queue. Minimum version 1.4. |
 | 2026-11-05 | Shaders: Slang, compiled to SPIR-V at build time. |
+| 2026-11-05 | Toolchain: Clang everywhere (clang-cl on Windows, which still needs the Visual Studio Build Tools for the MS STL); an MSVC CI job may come later. |
+| 2026-11-05 | Tests: doctest. |
+| 2026-11-05 | CI: GitHub Actions on hosted Linux and Windows runners, Vulkan tests on lavapipe. Performance tests on a self-hosted GPU runner (homelab), triggered manually or from `dev`, never from fork PRs. Wine/Proton for quick local Windows checks. |
+| 2026-11-05 | Profiling: Tracy (CPU/GPU timings, memory, locks). GPU debugging: RenderDoc, with its in-app capture API later. |
+| 2026-11-05 | Logging: in-house logger with severities, per-module categories, console and file sinks. The interface is async-ready; a synchronous version first, then a background thread that flushes on fatal errors. |
+| 2026-11-05 | Linking: engine core modules are static by default, shared with a CMake option; export macros from the first module, and a CI job building shared. Plugins and optional modules are shared by default (hot reload) and can be linked statically for a monolithic shipping build. |
+| 2026-11-05 | First modules, each depending only on those below it: `core` (types, logger, assertions, `std::expected` errors, memory), `platform` (the only module talking to the OS, via SDL3: window, input, files, time, shared-library loading, Vulkan surface), `render` (Vulkan: device, swapchain, pipelines, frame sync, deferred deletion, Slang shaders). |
+| 2026-11-05 | Content (a demo, a game) is a shared-library module with a standard entry point, run by two hosts: the `player` (standalone executable) and the editor (in its viewport). `render` always draws to an offscreen image, then presents it to the window or shows it in an ImGui panel. |
+| 2026-11-05 | Milestones reorganized: the engine skeleton and the editor come first; rendering features (triangle, basics, ray tracing) are demos running inside the engine. |
 
 ## Open questions
 
 Settled one at a time; each answer moves to *Decisions* and, if it changes
 code, becomes an issue.
 
-- **Toolchain** — Clang everywhere (clang-cl on Windows), or GCC + MSVC?
-- **Engine architecture** — module boundaries, ECS (custom, EnTT), plugin
-  model.
+- **Math library** — glm (as in legacy), wrapped in `core`, or in-house?
+- **Engine architecture** — ECS (custom, EnTT), plugin model and its
+  registration in shared and static modes, the content module entry point.
 - **Scripting runtimes** — how Python and Lua are embedded and installed
   (uv-managed Python as in legacy? Lua 5.4 or LuaJIT?).
-- **Tooling** — tests (doctest?), CI (GitHub Actions), profiling (Tracy),
-  logging.
 - **Neovim integration** — what it means concretely (embedded editor, RPC,
   plugin).
 
@@ -75,11 +82,12 @@ code, becomes an issue.
 
 | Milestone | Goal | Done when |
 | --- | --- | --- |
-| **M0 · Foundations** | Repository settings, CMake + Ninja skeleton, format/lint configs, one empty module with a test, CI | `cmake --preset` configures, builds and runs the tests, locally and in CI |
-| **M1 · Vulkan bootstrap** | Window, instance with validation layers, device selection, swapchain, clear color | A window clears to a color with no validation error, and survives a resize |
-| **M2 · First triangle** | Graphics pipeline, shaders compiled at build, frame synchronization | A triangle is drawn, frames in flight, clean shutdown |
-| **M3 · Rendering basics** | Buffers, uniforms, textures, depth, camera, mesh loading | A textured model is drawn with a moving camera |
-| **M4 · Ray tracing** | Ray tracing extensions, acceleration structures, ray tracing pipeline | A scene is rendered with ray-traced shadows |
+| **M0 · Foundations** | Repository settings, CMake + Ninja presets with Clang, vcpkg manifest, `core` with the logger, doctest, CI on Linux and Windows | The presets configure, build and run the tests, locally and in CI, in static and shared modes |
+| **M1 · Engine skeleton** | `platform` (SDL3), main loop, loading of content modules, the `player` host, a minimal `render` clearing an offscreen image presented to the window | The player loads an empty content module and shows a cleared window, with no validation error, surviving a resize |
+| **M2 · Editor shell** | Editor host with Dear ImGui docking, a viewport showing the offscreen image, a log console, the same content module loaded inside | The same content module runs in the player and in the editor viewport |
+| **M3 · First triangle** | A "triangle" demo: graphics pipeline, Slang shaders compiled at build, frame synchronization | The triangle demo runs in both hosts, frames in flight, clean shutdown |
+| **M4 · Rendering basics** | Buffers, uniforms, textures, depth, camera, mesh loading, as demos | A textured model is drawn with a moving camera |
+| **M5 · Ray tracing** | Ray tracing extensions, acceleration structures, ray tracing pipeline, as a demo | A scene is rendered with ray-traced shadows |
 
 ### .github
 
@@ -89,6 +97,6 @@ code, becomes an issue.
 
 ### Later (not scheduled)
 
-Engine architecture and ECS, editor UI, Python automation, Lua scripting,
+ECS and plugins, Python automation, Lua scripting,
 asset pipeline, Neovim integration, test projects, the game, website, MCP
 tools.
