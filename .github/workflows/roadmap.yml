@@ -1,0 +1,37 @@
+# Copyright (c) 2026 AIperture-Labs <xavier.beheydt@gmail.com>
+# SPDX-License-Identifier: MPL-2.0
+# Contributors:
+#   Copyright (c) 2026 Claude Code (Claude Opus 5.5)
+
+name: roadmap
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [scripts/roadmap.py, .github/workflows/roadmap.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render profile/roadmap.svg from the milestones
+        env:
+          REPOS: AIperture-Labs/AetherEngine
+          # Public repositories only need the default token; private ones
+          # need a ROADMAP_TOKEN secret with read access to issues.
+          GH_TOKEN: ${{ secrets.ROADMAP_TOKEN || github.token }}
+        run: python3 scripts/roadmap.py
+      - name: Commit if changed
+        run: |
+          git diff --quiet -- profile/roadmap.svg && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(roadmap): update roadmap.svg" -- profile/roadmap.svg
+          git push
