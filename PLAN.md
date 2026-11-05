@@ -18,6 +18,43 @@ useful, but the work itself is tracked in issues and PRs. The roadmap picture on
 (`profile/roadmap.svg`) is regenerated every day from the milestones by
 `scripts/roadmap.py`.
 
+## Agent tasks
+
+Commands that an agent runs on Xavier's machine (where `git` and `gh` are
+authenticated), from the `AIperture-Labs/` folder that holds the clones.
+
+Convention: a code block whose info string contains `agent` is meant to be
+executed by an agent, e.g. ```` ```bash agent model=haiku ````; `model=` is the
+suggested Claude Code model (`haiku` for mechanical tasks, `sonnet` by
+default, `opus` for design or hard debugging). The agent checks the current
+state first, asks before anything destructive, runs the block, then removes
+the task from this section in a `docs(plan)` commit and reports what it did.
+Blocks without `agent` are examples for humans.
+
+### Publish the pending local work
+
+```bash agent model=haiku
+git -C GitHub-Profile push
+git -C AetherEngine push -u origin docs/architecture-overview
+cd AetherEngine && gh pr create --base dev --fill   # Xavier merges it (squash)
+```
+
+### Rename the AetherEngine milestones and create M2
+
+Follows the milestone reorganization of 2026-11-05. Rename in this order, so
+titles never collide.
+
+```bash agent model=haiku
+R=repos/AIperture-Labs/AetherEngine
+num() { gh api "$R/milestones?state=all" --jq ".[] | select(.title==\"$1\") | .number"; }
+ren() { gh api -X PATCH "$R/milestones/$(num "$1")" -f title="$2"; }
+ren "M4 · Ray tracing" "M5 · Ray tracing"
+ren "M3 · Rendering basics" "M4 · Rendering basics"
+ren "M2 · First triangle" "M3 · First triangle"
+ren "M1 · Vulkan bootstrap" "M1 · Engine skeleton"
+gh api "$R/milestones" -f title="M2 · Editor shell"
+```
+
 ## Repositories
 
 | Repository | Role | Status |
