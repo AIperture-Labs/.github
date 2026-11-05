@@ -39,7 +39,7 @@ git -C AetherEngine push -u origin docs/architecture-overview
 cd AetherEngine && gh pr create --base dev --fill   # Xavier merges it (squash)
 ```
 
-### Rename the AetherEngine milestones and create M2
+### Rename the AetherEngine milestones and create M2 and M4
 
 Follows the milestone reorganization of 2026-11-05. Rename in this order, so
 titles never collide.
@@ -48,11 +48,12 @@ titles never collide.
 R=repos/AIperture-Labs/AetherEngine
 num() { gh api "$R/milestones?state=all" --jq ".[] | select(.title==\"$1\") | .number"; }
 ren() { gh api -X PATCH "$R/milestones/$(num "$1")" -f title="$2"; }
-ren "M4 · Ray tracing" "M5 · Ray tracing"
-ren "M3 · Rendering basics" "M4 · Rendering basics"
+ren "M4 · Ray tracing" "M6 · Ray tracing"
+ren "M3 · Rendering basics" "M5 · Rendering basics"
 ren "M2 · First triangle" "M3 · First triangle"
 ren "M1 · Vulkan bootstrap" "M1 · Engine skeleton"
 gh api "$R/milestones" -f title="M2 · Editor shell"
+gh api "$R/milestones" -f title="M4 · Audio basics"
 ```
 
 ## Repositories
@@ -99,19 +100,36 @@ gh api "$R/milestones" -f title="M2 · Editor shell"
 | 2026-11-05 | First modules, each depending only on those below it: `core` (types, logger, assertions, `std::expected` errors, memory), `platform` (the only module talking to the OS, via SDL3: window, input, files, time, shared-library loading, Vulkan surface), `render` (Vulkan: device, swapchain, pipelines, frame sync, deferred deletion, Slang shaders). |
 | 2026-11-05 | Content (a demo, a game) is a shared-library module with a standard entry point, run by two hosts: the `player` (standalone executable) and the editor (in its viewport). `render` always draws to an offscreen image, then presents it to the window or shows it in an ImGui panel. |
 | 2026-11-05 | Milestones reorganized: the engine skeleton and the editor come first; rendering features (triangle, basics, ray tracing) are demos running inside the engine. |
+| 2026-11-05 | Math: glm via vcpkg. `core` defines the engine nomenclature as aliases (`u32`, `f32`, `Vec3`, `Mat4`, `Quat`…); real wrapper classes only where a need appears. |
+| 2026-11-05 | ECS: an external library behind our interface. EnTT and flecs are prototyped on critical cases (large scene hierarchy, iterating thousands of entities, frequent component add/remove, exposure to the editor and Lua) before choosing; an in-house ECS stays possible later. |
+| 2026-11-05 | Game scripting: Lua 5.4. The C++ binding (sol2 or LuaBridge3) is chosen after a prototype. |
+| 2026-11-05 | Editor automation: Python embedded in the editor only (Blender-style), never in shipped games. CPython comes from vcpkg like every other dependency; uv only manages the script packages. Bindings: nanobind. |
+| 2026-11-05 | Jobs: one task system for the whole engine (Jolt and others plug into it), behind our interface. enkiTS and Taskflow are prototyped before choosing; an in-house system stays possible later. |
+| 2026-11-05 | Reflection: registration macros behind a `reflect<T>()` interface designed to switch to C++26 static reflection. GCC 16 already implements it, Clang not yet: the switch is prototyped with GCC 16 until Clang ships it. Used by the editor, serialization, Lua and Python. |
+| 2026-11-05 | Audio: miniaudio (output, mixing, decoding, node graph) and Steam Audio (HRTF spatialization, occlusion, reverb). A modular synthesizer lives in the audio engine as graph nodes, edited as nodes in the editor: first basic C++ modules (oscillators, filters, envelopes, noise) for demos, advanced modules later in Pure Data (libpd) and Faust. Real-time DSP is C++ or compiled Faust only; Python assembles graphs and generates sounds offline. |
+| 2026-11-05 | Physics: Jolt Physics. |
+| 2026-11-05 | 3D assets: glTF 2.0 as the main import path (fastgltf), textures in KTX2 with Basis Universal, converted to an engine runtime format. Other formats come later as import/export plugins: ufbx for FBX, Assimp for the rest. |
+| 2026-11-05 | Serialization: scenes and assets as JSON (glaze) in the editor, splittable per entity or zone for large scenes; binary compressed with zstd or LZ4 in shipped games. Configuration files in TOML (toml++). |
+| 2026-11-05 | Debugger: LLDB on Linux and Windows, driven from Neovim through DAP (nvim-dap, lldb-dap). |
+| 2026-11-05 | Neovim: first as the external code editor (open a file at a line, hot reload on save) with a Neovim plugin to drive the engine; embedding it in an editor panel comes later. |
+| 2026-11-05 | AI (voice generation, speech-to-text, text-to-speech, lightweight model management, training) is set aside; it is raised again when designing the plugins and the asset pipeline. |
 
 ## Open questions
 
 Settled one at a time; each answer moves to *Decisions* and, if it changes
 code, becomes an issue.
 
-- **Math library** — glm (as in legacy), wrapped in `core`, or in-house?
-- **Engine architecture** — ECS (custom, EnTT), plugin model and its
-  registration in shared and static modes, the content module entry point.
-- **Scripting runtimes** — how Python and Lua are embedded and installed
-  (uv-managed Python as in legacy? Lua 5.4 or LuaJIT?).
-- **Neovim integration** — what it means concretely (embedded editor, RPC,
-  plugin).
+- **Plugin model** — the content module entry point, and how plugins
+  register in shared and static modes. To settle at M1.
+
+## Prototypes
+
+Comparisons to run when the feature is implemented, before choosing:
+
+- ECS: EnTT vs flecs.
+- Lua binding: sol2 vs LuaBridge3.
+- Jobs: enkiTS vs Taskflow.
+- Reflection: the C++26 switch, with GCC 16.
 
 ## Milestones
 
@@ -123,8 +141,9 @@ code, becomes an issue.
 | **M1 · Engine skeleton** | `platform` (SDL3), main loop, loading of content modules, the `player` host, a minimal `render` clearing an offscreen image presented to the window | The player loads an empty content module and shows a cleared window, with no validation error, surviving a resize |
 | **M2 · Editor shell** | Editor host with Dear ImGui docking, a viewport showing the offscreen image, a log console, the same content module loaded inside | The same content module runs in the player and in the editor viewport |
 | **M3 · First triangle** | A "triangle" demo: graphics pipeline, Slang shaders compiled at build, frame synchronization | The triangle demo runs in both hosts, frames in flight, clean shutdown |
-| **M4 · Rendering basics** | Buffers, uniforms, textures, depth, camera, mesh loading, as demos | A textured model is drawn with a moving camera |
-| **M5 · Ray tracing** | Ray tracing extensions, acceleration structures, ray tracing pipeline, as a demo | A scene is rendered with ray-traced shadows |
+| **M4 · Audio basics** | miniaudio output, Steam Audio spatialization, the audio node graph with basic synth modules, as a demo | A demo plays a sound moving around the listener and a small synth patch, in both hosts |
+| **M5 · Rendering basics** | Buffers, uniforms, textures, depth, camera, mesh loading, as demos | A textured model is drawn with a moving camera |
+| **M6 · Ray tracing** | Ray tracing extensions, acceleration structures, ray tracing pipeline, as a demo | A scene is rendered with ray-traced shadows |
 
 ### .github
 
@@ -134,6 +153,7 @@ code, becomes an issue.
 
 ### Later (not scheduled)
 
-ECS and plugins, Python automation, Lua scripting,
-asset pipeline, Neovim integration, test projects, the game, website, MCP
+ECS and plugins, Python automation, Lua scripting, physics, asset pipeline
+and FBX/Assimp plugins, Pure Data and Faust synth modules, AI subsystem,
+Neovim plugin then embedded panel, test projects, the game, website, MCP
 tools.
