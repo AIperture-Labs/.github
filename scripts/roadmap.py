@@ -23,29 +23,47 @@ import urllib.request
 from html import escape
 
 OUT = "profile/roadmap.svg"
-W, H = 880, 292
+W, H = 880, 292  # H is the minimum height, it grows with the issue lists
 PAD = 48
 TRACK_Y = 150
 MAX_NODES = 6
+MAX_ISSUES = 5  # done issues listed under a milestone
+ISSUE_CHARS = 19
 
 
-def fetch(repo, token):
+def get(url, token):
     req = urllib.request.Request(
-        f"https://api.github.com/repos/{repo}/milestones?state=all&per_page=100",
+        url,
         headers={"Accept": "application/vnd.github+json"}
         | ({"Authorization": f"Bearer {token}"} if token else {}),
     )
     with urllib.request.urlopen(req) as r:
-        return [
-            {
-                "repo": repo.split("/")[1],
-                "title": m["title"],
-                "state": m["state"],
-                "open": m["open_issues"],
-                "closed": m["closed_issues"],
-            }
-            for m in json.load(r)
-        ]
+        return json.load(r)
+
+
+def fetch(repo, token):
+    api = f"https://api.github.com/repos/{repo}"
+    return [
+        {
+            "repo": repo.split("/")[1],
+            "title": m["title"],
+            "state": m["state"],
+            "open": m["open_issues"],
+            "closed": m["closed_issues"],
+            "done": [
+                {"number": i["number"], "title": i["title"]}
+                for i in get(f"{api}/issues?milestone={m['number']}&state=closed&per_page=100", token)
+                if "pull_request" not in i
+            ] if m["closed_issues"] else [],
+        }
+        for m in get(f"{api}/milestones?state=all&per_page=100", token)
+    ]
+
+
+def short(title):
+    """Drop the Conventional Commits prefix and truncate to the column width."""
+    text = re.sub(r"^\w+(\([^)]*\))?!?:\s*", "", title)
+    return text if len(text) <= ISSUE_CHARS else text[:ISSUE_CHARS - 1].rstrip() + "…"
 
 
 def parse(m):
@@ -75,6 +93,8 @@ def wrap(text, width=18):
 
 
 def render(ms, active):
+    rows = max((min(len(m.get("done", [])), MAX_ISSUES) + (len(m.get("done", [])) > MAX_ISSUES) for m in ms), default=0)
+    H = max(292, TRACK_Y + 82 + 36 + 14 + rows * 16 + 20)
     n = len(ms)
     step = (W - 2 * PAD) / n
     xs = [PAD + step * (i + 0.5) for i in range(n)]
@@ -144,6 +164,13 @@ def render(ms, active):
         label = f'{m["closed"]}/{total} issues' if total else ("done" if done else "planned")
         o.append(f'<text x="{x:.1f}" y="{bar_y + 20}" class="mono" font-size="10.5" text-anchor="middle" fill="#8b98ad">{label}</text>')
         o.append(f'<text x="{x:.1f}" y="{bar_y + 36}" class="mono" font-size="10" text-anchor="middle" fill="#4a5872">{escape(m["repo"])}</text>')
+        done_issues = m.get("done", [])
+        for k, issue in enumerate(done_issues[:MAX_ISSUES]):
+            y = bar_y + 58 + k * 16
+            o.append(f'<path d="M{x - 62:.1f} {y - 4}l2.5 2.5 4.5-5" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>'
+                     f'<text x="{x - 53:.1f}" y="{y}" class="mono" font-size="10" fill="#8b98ad"><title>#{issue["number"]} {escape(issue["title"])}</title>{escape(short(issue["title"]))}</text>')
+        if len(done_issues) > MAX_ISSUES:
+            o.append(f'<text x="{x - 53:.1f}" y="{bar_y + 58 + MAX_ISSUES * 16}" class="mono" font-size="10" fill="#4a5872">+{len(done_issues) - MAX_ISSUES} more</text>')
     o.append("</svg>\n")
     return "\n".join(o)
 
