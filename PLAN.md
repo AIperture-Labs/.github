@@ -31,30 +31,7 @@ state first, asks before anything destructive, runs the block, then removes
 the task from this section in a `docs(plan)` commit and reports what it did.
 Blocks without `agent` are examples for humans.
 
-### Publish the pending local work
-
-```bash agent model=haiku
-git -C GitHub-Profile push
-git -C AetherEngine push -u origin docs/architecture-overview
-cd AetherEngine && gh pr create --base dev --fill   # Xavier merges it (squash)
-```
-
-### Rename the AetherEngine milestones and create M2 and M4
-
-Follows the milestone reorganization of 2026-11-05. Rename in this order, so
-titles never collide.
-
-```bash agent model=haiku
-R=repos/AIperture-Labs/AetherEngine
-num() { gh api "$R/milestones?state=all" --jq ".[] | select(.title==\"$1\") | .number"; }
-ren() { gh api -X PATCH "$R/milestones/$(num "$1")" -f title="$2"; }
-ren "M4 · Ray tracing" "M6 · Ray tracing"
-ren "M3 · Rendering basics" "M5 · Rendering basics"
-ren "M2 · First triangle" "M3 · First triangle"
-ren "M1 · Vulkan bootstrap" "M1 · Engine skeleton"
-gh api "$R/milestones" -f title="M2 · Editor shell"
-gh api "$R/milestones" -f title="M4 · Audio basics"
-```
+No task pending.
 
 ## Repositories
 
@@ -139,6 +116,15 @@ gh api "$R/milestones" -f title="M4 · Audio basics"
 | 2026-11-05 | Visual effects: a node-based VFX system (Niagara-like) with GPU particles; volumetric fire and smoke as grid fluid simulation in compute shaders, with volumetric rendering also used for fog and clouds; a water system (ocean waves, rivers, lakes, reflections, refraction, caustics) and particle-based liquid simulation. Part of the fluids milestone. |
 | 2026-11-05 | Destruction, like Chaos Destruction: Voronoi fracture prepared in the editor with several levels; at runtime pieces break off past damage thresholds and become Jolt bodies; debris lifetime, pooling and limits, with dust and sparks from particles. Free-form voxel destruction (Teardown-like) later. |
 | 2026-11-05 | Motion capture from video: an AI plugin pipeline producing animation assets (pose detection with MediaPipe or an ONNX model, cleanup and foot locking, retargeting to the character skeleton, saved as a regular animation played by ozz), with its own editor tool. |
+| 2026-11-08 | vcpkg is the `extern/vcpkg` git submodule, pinned to the `builtin-baseline` commit; the presets load its toolchain, which bootstraps vcpkg on the first configure. No system install, no `VCPKG_ROOT`. |
+| 2026-11-08 | Version: `VERSION` in `project()` only, set by a release PR before each tag; pre-releases (`-alpha.N`, `-beta.N`, `-rc.N`) are carried by the tag. |
+| 2026-11-08 | Tooling: LLVM 23 minimum for clang-format and clang-tidy. The C++ standard and the warning flags are set in CMake only; clang-format detects the standard, clangd reads `compile_commands.json`. |
+| 2026-11-08 | Header comment of source and config files: organization copyright, SPDX identifier, optional doc link; no contributors list (authorship is in git). |
+| 2026-11-08 | Labels: `scope:` (part of the repository), `agent:` and `model:` (who does the work); the Project's Area field stays the product. |
+| 2026-11-09 | CI Linux jobs run on Ubuntu 26.04 runners (Clang 20+), needed for `std::expected`. |
+| 2026-11-09 | Errors: engine code avoids exceptions, so a failure never stops the program: `Result<T>` / `Status` over `std::expected`, the standard APIs that do not throw, out-of-memory is fatal. Building without exceptions is decided after measurements (AetherEngine #32). |
+| 2026-11-09 | Naming: kind prefixes (`E` enum, `I` interface, `T` template parameter, `k` constant, `b` boolean) and scope prefixes (`m_`, `s_`, `g_`), so a review reads right without an IDE; checked by clang-tidy (`docs/naming.md`). |
+| 2026-11-09 | Memory: the allocator strategy (mimalloc or rpmalloc as global allocator, `std::pmr` frame arenas and pools, no separate container library by default) is chosen from Tracy measurements (AetherEngine #31, #34). |
 
 ## Open questions
 
@@ -171,11 +157,11 @@ Comparisons to run when the feature is implemented, before choosing:
 | Milestone | Goal | Done when |
 | --- | --- | --- |
 | **M0 · Foundations** | Repository settings, CMake + Ninja presets with Clang, vcpkg manifest, `core` with the logger, doctest, CI on Linux and Windows | The presets configure, build and run the tests, locally and in CI, in static and shared modes |
-| **M1 · Engine skeleton** | `platform` (SDL3), main loop, loading of content modules, the `player` host, a minimal `render` clearing an offscreen image presented to the window | The player loads an empty content module and shows a cleared window, with no validation error, surviving a resize |
+| **M1 · Engine skeleton** | `platform` (SDL3), main loop, loading of content modules, the `player` host, a minimal `render` clearing an offscreen image presented to the window, Tracy profiling | The player loads an empty content module and shows a cleared window, with no validation error, surviving a resize |
 | **M2 · Editor shell** | Editor host with Dear ImGui docking, a viewport showing the offscreen image, a log console, the same content module loaded inside | The same content module runs in the player and in the editor viewport |
 | **M3 · First triangle** | A "triangle" demo: graphics pipeline, Slang shaders compiled at build, frame synchronization | The triangle demo runs in both hosts, frames in flight, clean shutdown |
 | **M4 · Audio basics** | miniaudio output, Steam Audio spatialization, the audio node graph with basic synth modules, as a demo | A demo plays a sound moving around the listener and a small synth patch, in both hosts |
-| **M5 · Rendering basics** | Buffers, uniforms, textures, depth, camera, mesh loading, as demos | A textured model is drawn with a moving camera |
+| **M5 · Rendering basics** | Buffers, uniforms, textures, depth, camera, mesh loading, as demos; the allocator strategy and the no-exceptions measurement, on this first real workload | A textured model is drawn with a moving camera |
 | **M6 · Ray tracing** | Ray tracing extensions, acceleration structures, ray tracing pipeline, as a demo | A scene is rendered with ray-traced shadows |
 
 ### .github
