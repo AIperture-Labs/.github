@@ -125,6 +125,7 @@ No task pending.
 | 2026-11-09 | Errors: engine code avoids exceptions, so a failure never stops the program: `Result<T>` / `Status` over `std::expected`, the standard APIs that do not throw, out-of-memory is fatal. Building without exceptions is decided after measurements (AetherEngine #32). |
 | 2026-11-09 | Naming: kind prefixes (`E` enum, `I` interface, `T` template parameter, `k` constant, `b` boolean) and scope prefixes (`m_`, `s_`, `g_`), so a review reads right without an IDE; checked by clang-tidy (`docs/naming.md`). |
 | 2026-11-09 | Memory: the allocator strategy (mimalloc or rpmalloc as global allocator, `std::pmr` frame arenas and pools, no separate container library by default) is chosen from Tracy measurements (AetherEngine #31, #34). |
+| 2026-11-10 | Validation, like Vulkan's: build profiles (`Debug`, `Development`, `Shipping`) compile checks and logs in or out, with macros in `core` (assertions, log macros that drop their arguments below the minimum severity); the native validation of external libraries is routed to the logger; module APIs get in-house validation layers, enabled at launch without rebuilding and absent from Shipping, designed at M1 with the plugin model (AetherEngine #7, #36). Vulkan itself uses `VK_LAYER_KHRONOS_validation` outside Shipping, its messages routed to the logger. |
 
 ## Open questions
 
@@ -132,7 +133,8 @@ Settled one at a time; each answer moves to *Decisions* and, if it changes
 code, becomes an issue.
 
 - **Plugin model** — the content module entry point, and how plugins
-  register in shared and static modes. To settle at M1.
+  register in shared and static modes; module APIs must also accept
+  validation layers (AetherEngine #36). To settle at M1.
 - **Stable C interface** — to be checked: actual cost, generator design,
   memory ownership rules across the boundary, and whether it is worth it
   before a first Rust plugin.
