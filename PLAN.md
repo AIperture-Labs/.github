@@ -126,7 +126,7 @@ No task pending.
 | 2026-11-09 | Naming: kind prefixes (`E` enum, `I` interface, `T` template parameter, `k` constant, `b` boolean) and scope prefixes (`m_`, `s_`, `g_`), so a review reads right without an IDE; checked by clang-tidy (`docs/naming.md`). |
 | 2026-11-09 | Memory: the allocator strategy (mimalloc or rpmalloc as global allocator, `std::pmr` frame arenas and pools, no separate container library by default) is chosen from Tracy measurements (AetherEngine #31, #34). |
 | 2026-11-10 | Validation, like Vulkan's: build profiles (`Debug`, `Development`, `Shipping`) compile checks and logs in or out, with macros in `core` (assertions, log macros that drop their arguments below the minimum severity); the native validation of external libraries is routed to the logger; module APIs get in-house validation layers, enabled at launch without rebuilding and absent from Shipping, designed at M1 with the plugin model (AetherEngine #7, #36). Vulkan itself uses `VK_LAYER_KHRONOS_validation` outside Shipping, its messages routed to the logger. |
-| 2026-11-11 | Character modeling from photos (AI plugin track): the body is reconstructed as a parametric body model fitted to several photos of the same person, then rigged and used as the base for clothing and soft-body simulation. The pipeline and the base body model are chosen by a benchmark spike against real measurements (see *Prototypes*). The same body then serves as the target of the motion capture from video pipeline, so the spike also checks that it can be driven by video motion estimation and exported as a glTF skeleton for ozz. |
+| 2026-11-11 | Character modeling from photos (AI plugin track): the body is reconstructed as a parametric body model fitted to several photos of the same person, then rigged and used as the base for clothing and soft-body simulation. The pipeline and the base body model are chosen by a benchmark spike (AetherEngine #43) against real measurements (see *Prototypes*). The same body then serves as the target of the motion capture from video pipeline, so the spike also checks that it can be driven by video motion estimation and exported as a glTF skeleton for ozz. |
 
 ## Open questions
 
@@ -153,7 +153,7 @@ Comparisons to run when the feature is implemented, before choosing:
 - Jobs: enkiTS vs Taskflow.
 - Reflection: the C++26 switch, with GCC 16.
 - Behavior trees: BehaviorTree.CPP vs in-house on the node graph.
-- Body reconstruction from photos: multi-image fitting of a body model (Anny or SMPL-X) vs feed-forward models (HART, PF-LHM, HAMSt3R), measured in cm against real measurements; a spike, before the AI plugin needs it. The same spike checks that the chosen body model can be driven by motion estimated from video (the *Motion capture from video* decision).
+- Body reconstruction from photos: multi-image fitting of a body model (Anny or SMPL-X) vs feed-forward models (HART, PF-LHM, HAMSt3R), measured in cm against real measurements; a spike (AetherEngine #43), before the AI plugin needs it. The same spike checks that the chosen body model can be driven by motion estimated from video (the *Motion capture from video* decision).
 
 ## Milestones
 
