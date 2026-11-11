@@ -126,6 +126,7 @@ No task pending.
 | 2026-11-09 | Naming: kind prefixes (`E` enum, `I` interface, `T` template parameter, `k` constant, `b` boolean) and scope prefixes (`m_`, `s_`, `g_`), so a review reads right without an IDE; checked by clang-tidy (`docs/naming.md`). |
 | 2026-11-09 | Memory: the allocator strategy (mimalloc or rpmalloc as global allocator, `std::pmr` frame arenas and pools, no separate container library by default) is chosen from Tracy measurements (AetherEngine #31, #34). |
 | 2026-11-10 | Validation, like Vulkan's: build profiles (`Debug`, `Development`, `Shipping`) compile checks and logs in or out, with macros in `core` (assertions, log macros that drop their arguments below the minimum severity); the native validation of external libraries is routed to the logger; module APIs get in-house validation layers, enabled at launch without rebuilding and absent from Shipping, designed at M1 with the plugin model (AetherEngine #7, #36). Vulkan itself uses `VK_LAYER_KHRONOS_validation` outside Shipping, its messages routed to the logger. |
+| 2026-11-11 | Character modeling from photos (AI plugin track): the body is reconstructed as a parametric body model fitted to several photos of the same person, then rigged and used as the base for clothing and soft-body simulation. The pipeline and the base body model are chosen by a benchmark spike against real measurements (see *Prototypes*). The same body then serves as the target of the motion capture from video pipeline, so the spike also checks that it can be driven by video motion estimation and exported as a glTF skeleton for ozz. |
 
 ## Open questions
 
@@ -138,6 +139,7 @@ code, becomes an issue.
 - **Stable C interface** — to be checked: actual cost, generator design,
   memory ownership rules across the boundary, and whether it is worth it
   before a first Rust plugin.
+- **Base body model** — Anny (Apache-2.0, open assets), SMPL-X (non-commercial license) or both (SMPL-X to prototype, a free model before any release). Several vision models are also non-commercial (Sapiens: CC-BY-NC 4.0). To settle from the body reconstruction spike, with each license checked in its repository.
 - **Visual scripting** — something more technical than Blueprints, for
   example nodes holding code blocks (Lua), like Houdini's code nodes. To think
   through later.
@@ -151,6 +153,7 @@ Comparisons to run when the feature is implemented, before choosing:
 - Jobs: enkiTS vs Taskflow.
 - Reflection: the C++26 switch, with GCC 16.
 - Behavior trees: BehaviorTree.CPP vs in-house on the node graph.
+- Body reconstruction from photos: multi-image fitting of a body model (Anny or SMPL-X) vs feed-forward models (HART, PF-LHM, HAMSt3R), measured in cm against real measurements; a spike, before the AI plugin needs it. The same spike checks that the chosen body model can be driven by motion estimated from video (the *Motion capture from video* decision).
 
 ## Milestones
 
@@ -179,7 +182,7 @@ illumination, GPU particles, fluids, virtualized geometry. Networking after
 the ECS. Animation, input actions, localization, export and modding. Navigation and
 behavior trees, large worlds, procedural terrain and placement, editor
 basics, cinematics, save games, crash reporting and memory tracking, VFX and
-water, destruction, motion capture from video.
+water, destruction, motion capture from video, character reconstruction from photos, then motion extraction from video on the same body.
 
 ECS and plugins, Python automation, Lua scripting, physics, asset pipeline
 and FBX/Assimp plugins, Pure Data and Faust synth modules, AI subsystem,
