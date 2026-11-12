@@ -127,15 +127,17 @@ No task pending.
 | 2026-11-09 | Memory: the allocator strategy (mimalloc or rpmalloc as global allocator, `std::pmr` frame arenas and pools, no separate container library by default) is chosen from Tracy measurements (AetherEngine #31, #34). |
 | 2026-11-10 | Validation, like Vulkan's: build profiles (`Debug`, `Development`, `Shipping`) compile checks and logs in or out, with macros in `core` (assertions, log macros that drop their arguments below the minimum severity); the native validation of external libraries is routed to the logger; module APIs get in-house validation layers, enabled at launch without rebuilding and absent from Shipping, designed at M1 with the plugin model (AetherEngine #7, #36). Vulkan itself uses `VK_LAYER_KHRONOS_validation` outside Shipping, its messages routed to the logger. |
 | 2026-11-11 | Character modeling from photos (AI plugin track): the body is reconstructed as a parametric body model fitted to several photos of the same person, then rigged and used as the base for clothing and soft-body simulation. The pipeline and the base body model are chosen by a benchmark spike (AetherEngine #43) against real measurements (see *Prototypes*). The same body then serves as the target of the motion capture from video pipeline, so the spike also checks that it can be driven by video motion estimation and exported as a glTF skeleton for ozz. |
+| 2026-11-11 | Module and linking model: two build modes, dynamic (engine and content shared, content loaded at run time; development and the editor) and monolithic (everything static in one executable named after the content; Shipping), never mixed, so engine state such as the logger exists once; a third-party library with global state is linked into one engine module only. A `runtime` module holds the main loop and the content lifecycle, shared by the hosts. Its `Runtime` object is the engine context: it owns the subsystems and is handed to the content; modules above `core` keep no global state, only `core` services (logger, assertions) are global. Content implements `IContent` and exports `aetherContent()`, checked at load against the engine version, the build profile and the identity of `core`. Content reads time only from the runtime, so an offline host (video or audio export) can drive it with a fixed step. A project is not only a game (music, video, VFX…): project types are templates chosen at project creation, picking plugins and exports. No module descriptor file until the editor (AetherEngine #44). |
 
 ## Open questions
 
 Settled one at a time; each answer moves to *Decisions* and, if it changes
 code, becomes an issue.
 
-- **Plugin model** — the content module entry point, and how plugins
-  register in shared and static modes; module APIs must also accept
-  validation layers (AetherEngine #36). To settle at M1.
+- **Plugin registration** — plugins follow the module and linking model
+  (AetherEngine #44), with an entry point per plugin; how they register
+  and how their APIs accept validation layers (AetherEngine #36) is
+  settled with the first plugin.
 - **Stable C interface** — to be checked: actual cost, generator design,
   memory ownership rules across the boundary, and whether it is worth it
   before a first Rust plugin.
