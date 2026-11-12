@@ -26,11 +26,11 @@
 <rect x=".5" y=".5" width="879" height="397" rx="15.5" fill="none" stroke="#243047"/>
 <text x="32" y="44" class="mono" font-size="11" letter-spacing="3" fill="#38bdf8">// ROADMAP</text>
 <text x="32" y="72" class="sans" font-size="22" font-weight="600" fill="#e6edf3">AIperture Labs</text>
-<text x="848" y="44" class="mono" font-size="11" fill="#5b6b85" text-anchor="end">updated 2026-11-11</text>
+<text x="848" y="44" class="mono" font-size="11" fill="#5b6b85" text-anchor="end">updated 2026-11-12</text>
 <line x1="113.33333333333333" y1="150" x2="766.6666666666666" y2="150" stroke="#243047" stroke-width="2" stroke-dasharray="2 6" stroke-linecap="round"/>
-<line x1="113.33333333333333" y1="150" x2="132.9" y2="150" stroke="url(#beam)" stroke-width="3" stroke-linecap="round" filter="url(#glow)" opacity=".8"/>
-<line x1="113.33333333333333" y1="150" x2="132.9" y2="150" stroke="url(#beam)" stroke-width="2" stroke-linecap="round"/>
-<line class="flow" x1="113.33333333333333" y1="150" x2="132.9" y2="150" stroke="#e0f2fe" stroke-width="2" stroke-dasharray="4 24" stroke-linecap="round" opacity=".8"/>
+<line x1="113.33333333333333" y1="150" x2="133.4" y2="150" stroke="url(#beam)" stroke-width="3" stroke-linecap="round" filter="url(#glow)" opacity=".8"/>
+<line x1="113.33333333333333" y1="150" x2="133.4" y2="150" stroke="url(#beam)" stroke-width="2" stroke-linecap="round"/>
+<line class="flow" x1="113.33333333333333" y1="150" x2="133.4" y2="150" stroke="#e0f2fe" stroke-width="2" stroke-dasharray="4 24" stroke-linecap="round" opacity=".8"/>
 
 <circle cx="113.3" cy="150" r="11" fill="#38bdf8"/><path d="M108.3 150l3.5 3.5 6.5-7" fill="none" stroke="#0b0f17" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
 <text x="113.3" y="120" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#38bdf8">M0</text>
@@ -49,9 +49,10 @@
 <text x="244.0" y="120" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#7dd3fc">M1</text>
 <text x="244.0" y="188" class="sans" font-size="14" font-weight="600" text-anchor="middle" fill="#e6edf3">Engine skeleton</text>
 <rect x="212.0" y="232" width="64" height="3" rx="1.5" fill="#1e293b"/>
-<rect x="212.0" y="232" width="0.0" height="3" rx="1.5" fill="url(#beam)"/>
-<text x="244.0" y="252" class="mono" font-size="10.5" text-anchor="middle" fill="#8b98ad">0/2 issues</text>
+<rect x="212.0" y="232" width="9.8" height="3" rx="1.5" fill="url(#beam)"/>
+<text x="244.0" y="252" class="mono" font-size="10.5" text-anchor="middle" fill="#8b98ad">2/13 issues</text>
 <text x="244.0" y="268" class="mono" font-size="10" text-anchor="middle" fill="#4a5872">AetherEngine</text>
+<path d="M182.0 286l2.5 2.5 4.5-5" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><text x="191.0" y="290" class="mono" font-size="10" fill="#8b98ad"><title>#44 docs(architecture): module, content and linking model</title>module, content an…</text>
 <circle cx="374.7" cy="150" r="9" fill="#0b0f17" stroke="#33415c" stroke-width="2"/>
 <text x="374.7" y="120" class="mono" font-size="12" font-weight="700" text-anchor="middle" fill="#5b6b85">M2</text>
 <text x="374.7" y="188" class="sans" font-size="14" font-weight="500" text-anchor="middle" fill="#8b98ad">Editor shell</text>
